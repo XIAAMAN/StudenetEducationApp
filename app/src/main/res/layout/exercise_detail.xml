@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scrollbars="vertical"
+    android:background="#20616161"
+    android:fadingEdge="vertical">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp">
+
+<!--    题目类型按钮-->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/choose_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:text="单选题"/>
+        <Button
+            android:id="@+id/multi_choose_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:text="多选题"/>
+        <Button
+            android:id="@+id/judge_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:text="判断题"/>
+        <Button
+            android:id="@+id/blank_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:text="填空题"/>
+        <Button
+            android:id="@+id/program_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:text="编程题"/>
+        <Button
+            android:id="@+id/self_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:text="主观题"/>
+
+    </LinearLayout>
+<!--题目名称-->
+    <TextView
+        android:id="@+id/exercise_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"/>
+<!--编程题的一些说明-->
+    <TextView
+        android:id="@+id/input_example_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="输入样例:"
+        android:textSize="20dp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/input_example"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18dp"/>
+
+    <TextView
+        android:id="@+id/output_example_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="输出样例:"
+        android:textSize="20dp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/output_example"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18dp"/>
+    <TextView
+        android:id="@+id/warning_info_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="提示信息"
+        android:textSize="20dp"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:id="@+id/waring_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18dp"/>
+<!--答题区-->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:text="答题区"
+        android:textSize="20dp"
+        android:textStyle="bold"/>
+
+    <!--    单选题-->
+    <RadioGroup
+        android:id="@+id/radioGroup_choose"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="20dp"
+        >
+        <RadioButton
+            android:id="@+id/A_choose"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="A" />
+        <RadioButton
+            android:id="@+id/B_choose"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:text="B" />
+        <RadioButton
+            android:id="@+id/C_choose"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:text="C" />
+        <RadioButton
+            android:id="@+id/D_choose"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:text="D" />
+    </RadioGroup>
+
+<!--    多选题-->
+    <LinearLayout
+        android:id="@+id/multi_choose_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="20dp">
+        <CheckBox
+            android:id="@+id/checkboxA"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:layout_marginLeft="10dp"
+            android:text="A"/>
+
+        <CheckBox
+            android:id="@+id/checkboxB"
+            android:text="B"
+            android:layout_marginLeft="20dp"
+            android:checked="false"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <CheckBox
+            android:id="@+id/checkboxC"
+            android:text="C"
+            android:layout_marginLeft="20dp"
+            android:checked="false"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <CheckBox
+            android:id="@+id/checkboxD"
+            android:text="D"
+            android:layout_marginLeft="20dp"
+            android:layout_width="wrap_content"
+            android:checked="false"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+<!--    判断题-->
+    <RadioGroup
+        android:id="@+id/judge_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="20dp"
+        >
+        <RadioButton
+            android:id="@+id/judge_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dp"
+            android:text="对" />
+        <RadioButton
+            android:id="@+id/judge_error"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:text="错" />
+
+    </RadioGroup>
+
+<!--    填空题-->
+    <LinearLayout
+        android:id="@+id/blank_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:layout_marginLeft="10dp"
+        android:orientation="vertical">
+        <EditText
+            android:hint="（1）"
+            android:id="@+id/blank_one"
+            android:width="200dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"/>
+        <EditText
+            android:hint="（2）"
+            android:width="200dp"
+            android:id="@+id/blank_two"
+            android:textSize="18sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <EditText
+            android:hint="（3）"
+            android:width="200dp"
+            android:id="@+id/blank_three"
+            android:textSize="18sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <EditText
+            android:hint="（4）"
+            android:width="200dp"
+            android:id="@+id/blank_four"
+            android:textSize="18sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <EditText
+            android:hint="（5）"
+            android:width="200dp"
+            android:id="@+id/blank_five"
+            android:textSize="18sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <EditText
+            android:hint="（6）"
+            android:width="200dp"
+            android:id="@+id/blank_six"
+            android:textSize="18sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <EditText
+            android:hint="（7）"
+            android:width="200dp"
+            android:id="@+id/blank_seven"
+            android:textSize="18sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <EditText
+            android:hint="（8）"
+            android:width="200dp"
+            android:id="@+id/blank_eight"
+            android:textSize="18sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <EditText
+            android:hint="（9）"
+            android:width="200dp"
+            android:id="@+id/blank_nine"
+            android:textSize="18sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <EditText
+            android:hint="（10）"
+            android:width="200dp"
+            android:id="@+id/blank_ten"
+            android:textSize="18sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+<!--    编程题-->
+    <LinearLayout
+        android:id="@+id/program_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:orientation="vertical">
+    <EditText
+        android:id="@+id/edit_program"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:hint="在此处填写你的代码"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_edittext"
+        android:inputType="textMultiLine"
+        android:lines="15"
+        android:gravity="left|top"
+        android:textColor="@color/black"
+        android:fontFamily="微软雅黑"
+        android:textSize="18sp"/>
+
+    </LinearLayout>
+
+<!--    主观题-->
+    <LinearLayout
+        android:id="@+id/self_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:orientation="horizontal">
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:hint="请上传word文件"
+            android:layout_weight="3"
+            android:id="@+id/file_name"/>
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="浏览"
+            android:textSize="17sp"
+            android:id="@+id/choose_file"/>
+
+    </LinearLayout>
+
+    <!--    题目类型按钮-->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginBottom="20dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/submit_exercise"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:background="@drawable/btn_active"
+            android:textSize="18dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:layout_marginRight="10dp"
+            android:text="提交"/>
+
+        <Button
+            android:id="@+id/test_exercise"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:background="@drawable/btn_active"
+            android:textSize="18dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:layout_marginRight="10dp"
+            android:text="在线运行"/>
+
+        <Button
+            android:id="@+id/back_exercise"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_enabled"
+            android:textSize="18dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:layout_marginRight="10dp"
+            android:text="上一题"/>
+        <Button
+            android:id="@+id/next_exercise"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_enabled"
+            android:textSize="18dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:text="下一题"/>
+
+    </LinearLayout>
+
+
+</LinearLayout>
+
+</ScrollView>

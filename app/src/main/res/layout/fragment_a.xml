@@ -1,0 +1,27 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/firstFragment"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="在线实验中心"
+        android:background="@color/blue"
+        android:padding="10dp"
+        android:textColor="@color/white"
+        android:textAlignment="center"
+        android:textSize="25sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#20616161"
+        android:text="说明：本系统收集的所有数据仅用于学术研究，不作任何商业用途"
+        android:textColor="@color/blue"
+        android:gravity="center_vertical"
+        android:paddingLeft="40dp"
+        android:paddingRight="40dp"
+        android:textSize="20sp" />
+
+</LinearLayout>
