@@ -55,7 +55,7 @@ public class BFragment extends android.support.v4.app.Fragment {
     public void onStart() {
         super.onStart();
         SysCollectionDb collectionDb = new SysCollectionDb();
-        String[] collectionUrl = {Constant.URL_GET_COLLECTION, "userName", new SysUserDb().getUserName()};
+        final String[] collectionUrl = {Constant.URL_GET_COLLECTION, "userName", new SysUserDb().getUserName()};
 //        message为网络连接的结果，如果message为“”表示连接失败，否则表示连接成功为返回的json数据
         String message = "";
 
@@ -97,6 +97,7 @@ public class BFragment extends android.support.v4.app.Fragment {
                         //删除本地数据库以前题目，然后将现在的题目存储到数据库中
 
                         Intent intent = new Intent(getActivity(), ExerciseDetailActivity.class);
+                        intent.putExtra("collectionId", collection.getCollectionId());
                         startActivity(intent);
                     }
 
@@ -111,7 +112,7 @@ public class BFragment extends android.support.v4.app.Fragment {
 
     //请求题目集数据
     public void getExerciseListByCollectionId(String collectionId) {
-        String[] exerciseUrl = {Constant.URL_GET_EXERCISE, "collectionId", collectionId};
+        String[] exerciseUrl = {Constant.URL_GET_EXERCISE, "collectionId", collectionId,"userName",new SysUserDb().getUserName()};
         String message;
         try {
             message = new AsyncTAskUtil(){}.execute(exerciseUrl).get();

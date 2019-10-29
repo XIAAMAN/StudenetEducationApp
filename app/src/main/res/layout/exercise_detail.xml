@@ -1,17 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:scrollbars="vertical"
     android:background="#20616161"
     android:fadingEdge="vertical">
+
+
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="10dp">
+    android:layout_height="match_parent">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/blue"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/exercise_back"
+            android:layout_width="wrap_content"
+            android:background="@color/blue"
+            android:textColor="@color/white"
+            android:paddingLeft="20dp"
+
+            android:drawableLeft="@drawable/back"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="10dp">
+        <TextView
+            android:id="@+id/decided_exercise"
+            android:layout_width="wrap_content"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:layout_height="wrap_content"/>
 <!--    题目类型按钮-->
     <LinearLayout
         android:layout_width="wrap_content"
@@ -68,6 +97,7 @@
             android:text="主观题"/>
 
     </LinearLayout>
+
 <!--题目名称-->
     <TextView
         android:id="@+id/exercise_name"
@@ -349,6 +379,21 @@
 
     </LinearLayout>
 
+<!--    提交反馈-->
+    <EditText
+        android:id="@+id/submit_outcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_edittext"
+        android:inputType="textMultiLine"
+        android:lines="4"
+        android:enabled="false"
+        android:gravity="left|top"
+        android:textColor="@color/black"
+        android:fontFamily="微软雅黑"
+        android:textSize="17sp"/>
     <!--    题目类型按钮-->
     <LinearLayout
         android:layout_width="match_parent"
@@ -362,7 +407,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
-            android:background="@drawable/btn_active"
+            android:background="@drawable/submit_btn_state"
             android:textSize="18dp"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
@@ -378,7 +423,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/white"
-            android:background="@drawable/btn_active"
+            android:background="@drawable/submit_btn_state"
             android:textSize="18dp"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
@@ -393,7 +438,7 @@
             android:id="@+id/back_exercise"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_enabled"
+            android:background="@drawable/submit_btn_state"
             android:textSize="18dp"
             android:paddingTop="8dp"
             android:paddingBottom="8dp"
@@ -419,7 +464,7 @@
 
     </LinearLayout>
 
-
+    </LinearLayout>
 </LinearLayout>
 
 </ScrollView>

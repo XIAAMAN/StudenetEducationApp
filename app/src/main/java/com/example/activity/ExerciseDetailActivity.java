@@ -1,26 +1,20 @@
 package com.example.activity;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.ContentResolver;
-import android.content.ContentUris;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.Paint;
 import android.net.Uri;
-import android.os.Build;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
-import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -30,27 +24,30 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.bean.SysExercise;
 import com.example.constant.Constant;
 import com.example.db.SysExerciseDb;
+import com.example.db.SysUserDb;
+import com.example.fragment.AFragment;
+import com.example.fragment.BFragment;
+import com.example.studenteducation.MainActivity;
 import com.example.studenteducation.R;
 import com.example.util.AlertDialogUtil;
-import com.example.util.FileChooseUtil;
-import com.example.util.FileUtils;
+import com.example.util.OkhttpSubmitUtil;
+import com.example.util.OkhttpTestUtil;
 import com.example.util.TextViewHtml;
+import com.example.util.UnionData;
 import com.example.util.UploadUtil;
+import com.jaeger.library.StatusBarUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import okhttp3.Response;
+import java.util.concurrent.ExecutionException;
+import okhttp3.MediaType;
 import okhttp3.ResponseBody;
 
-import static com.example.util.FileUtils.getPath;
-import static com.example.util.FileUtils.getRealPathFromURI;
 
 
 public class ExerciseDetailActivity extends AppCompatActivity implements View.OnClickListener{
@@ -63,24 +60,32 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
     final String PDF = "application/pdf";
     final String MP4 = "video/mp4";
     final String M3U8 = "application/x-mpegURL";
+    public static final MediaType mediaType = MediaType.parse("application/json;charset=utf-8");
+
     private TextView exerciseName, inputExampleLabel, inputExample, outputExampleLabel, outputExample, warningInfoLabel, warningInfo;
     private Button chooseBtn, multiChooseBtn, judgeBtn, blankBtn, programBtn, selfBtn, submitExercise, testExercise, backExercise, nextExercise, chooseFile;
     private int chooseNum=0, multiChooseNum=0, judgeNum=0, blankNum=0, programNum=0, selfNum=0;
-    private List<SysExercise> chooseList, multiChooseList, judgeList, blankList, programList, selfList, tempBlankList;
+    private List<SysExercise> chooseList, multiChooseList, judgeList, blankList, programList, selfList, tempExerciseList, tempBlankList, exerciseList;
     private SysExercise currentExercise;
     private int exerciseLength = 0, exerciseIndex = 0, exerciseType = 0;
     private RadioGroup chooseGroup, judgeGroup;
     private RadioButton chooseA, chooseB, chooseC, chooseD, judgeRight, judgeError;
     private CheckBox checkBoxA, checkBoxB, checkBoxC, checkBoxD;
     private LinearLayout multiChooseLayout, blankGroup, programGroup, selfGroup;
-    private EditText blankOne, blankTwo, blankThree, blankFour, blankFive, blankSix, blankSeven, blankEight, blankNine, blankTen, editProgram;
+    private EditText blankOne, blankTwo, blankThree, blankFour, blankFive, blankSix, blankSeven, blankEight, blankNine, blankTen, editProgram, submitOUtCome;
     private EditText fileName;
-    private String chooseFilePath;
+    private TextView decidedExercise;
+    private Button exerciseBack;
+    private String chooseFilePath, collectionId;
     private File file;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.exercise_detail);
+        StatusBarUtil.setColor(this, getResources().getColor(R.color.blue));
+        Intent intent = getIntent();
+        collectionId = intent.getStringExtra("collectionId");
+
 
         chooseBtn = (Button)findViewById(R.id.choose_type);
         multiChooseBtn = (Button)findViewById(R.id.multi_choose_type);
@@ -137,7 +142,13 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
         fileName = (EditText) findViewById(R.id.file_name);
         chooseFile = (Button) findViewById(R.id.choose_file);
 
-        List<SysExercise> exerciseList = new SysExerciseDb().getAllExercise();
+        submitOUtCome = (EditText) findViewById(R.id.submit_outcome);
+
+        exerciseBack = (Button) findViewById(R.id.exercise_back);
+
+        decidedExercise = (TextView) findViewById(R.id.decided_exercise);
+
+        exerciseList = new SysExerciseDb().getAllExercise();
         dealExerciseTypeNum(exerciseList);
 
         chooseBtn.setOnClickListener(this);
@@ -151,6 +162,7 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
         backExercise.setOnClickListener(this);
         nextExercise.setOnClickListener(this);
         chooseFile.setOnClickListener(this);
+        exerciseBack.setOnClickListener(this);
     }
 
     //计算各种题型题目数量
@@ -163,6 +175,7 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
         programList = new ArrayList<>();
         selfList = new ArrayList<>();
         tempBlankList = new ArrayList<>();
+        tempExerciseList = new SysExerciseDb().getAllExercise();
         for(int i=0; i<exerciseList.size(); i++) {
             if(exerciseList.get(i).getExerciseType()==1) {
                 programList.add(exerciseList.get(i));
@@ -190,9 +203,9 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
             }
         }
         //将填空题答案设置为空字符
-        for(int i=0; i<blankList.size(); i++) {
-            blankList.get(i).setExerciseCode("");
-        }
+//        for(int i=0; i<blankList.size(); i++) {
+//            blankList.get(i).setExerciseCode("");
+//        }
 
         if(chooseNum == 0) {
             chooseBtn.setVisibility(View.GONE);
@@ -245,6 +258,7 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
             exerciseLength = selfList.size();
         }
         TextViewHtml.htmlToText(exerciseName,this,currentExercise.getExerciseName(),false);
+        checkDecidedExerciseNumber();
         judgeInputAndOutputLabel();
         showDifferentOut();
         judgeBackAndNextBtnState();
@@ -284,9 +298,44 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
                     } else {
                         new AlertDialogUtil("消息提示", "暂不支持该类型文件上传", this).alertDialogWithOk();
                     }
+                } else if(exerciseType == 4){
+                    updateExerciseListCode();
+
+                    if(isHasBlank()) {
+                        notDisplaySubmitOUtCome();
+                        submitExercise();
+                    } else {
+                        Toast.makeText(this, "请填写完所有空再提交", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    updateExerciseListCode();
+                    if(currentExercise.getExerciseCode().length() > 0) {
+                        notDisplaySubmitOUtCome();
+                        new Handler().postDelayed(new Runnable(){
+                            public void run() {
+                                //execute the task
+                                submitExercise();
+                            }
+                        }, 200);
+
+                    } else {
+                        Toast.makeText(this, "请作答后再提交答案", Toast.LENGTH_SHORT).show();
+                    }
                 }
                 break;
             case R.id.test_exercise:
+                updateExerciseListCode();
+                if(currentExercise.getExerciseCode().length() > 0) {
+                    notDisplaySubmitOUtCome();
+                    new Handler().postDelayed(new Runnable(){
+                        public void run() {
+                            //execute the task
+                            onlineExercise();
+                        }
+                    }, 200);
+                } else {
+                    Toast.makeText(this, "请作答后再提交答案", Toast.LENGTH_SHORT).show();
+                }
                 break;
             case R.id.back_exercise:
                 backExercise();
@@ -301,9 +350,13 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
                     showFileChooser();
                 }
                 break;
+            case R.id.exercise_back:
+//                onKeyDown(KeyEvent.KEYCODE_BACK, null);
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+                break;
             default:
                 break;
-
         }
     }
 
@@ -482,6 +535,7 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
 
     //根据题目类型显示不同的答题内容
     public void showDifferentOut(){
+        notDisplaySubmitOUtCome();
         if(exerciseType == 2) {
             displayChooseOUt();
             notDisplayMultiChooseOUt();
@@ -613,25 +667,41 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
         blankGroup.setVisibility(View.VISIBLE);
 
         //找到当前题目有多少空
-        String blanStr = "";
-        String str[], tempStr[] = new String[10];
-        int index = 0;
-        for(int i=0; i<tempBlankList.size(); i++) {
-            if(tempBlankList.get(i).getExerciseId().equals(currentExercise.getExerciseId())) {
-                blanStr = tempBlankList.get(i).getExerciseCode();
-                index = i;
-                break;
+//        String blanStr = "";
+//        String str[], tempStr[] = new String[10];
+//        int index = 0;
+//        for(int i=0; i<tempBlankList.size(); i++) {
+//            if(tempBlankList.get(i).getExerciseId().equals(currentExercise.getExerciseId())) {
+//                blanStr = tempBlankList.get(i).getExerciseCode();
+//                index = i;
+//                break;
+//            }
+//        }
+//        str = blankList.get(index).getExerciseCode().split(";xiaaman;");
+//        for(int i=0; i<tempStr.length; i++) {
+//            if(i<str.length) {
+//                tempStr[i] = str[i];
+//            } else {
+//                tempStr[i] = "";
+//            }
+//        }
+
+        int number = currentExercise.getExerciseClassifyCause();
+        String tempStr[] = new String[number];
+        String str;
+        if(currentExercise.getExerciseCode().length() > 0) {
+            str = currentExercise.getExerciseCode().replace(";xiaaman;",";xiaaman; ");
+            tempStr = str.split(";xiaaman;");
+            for(int i=0; i<tempStr.length; i++) {
+                if(" ".equals(tempStr[i])) {
+                    tempStr[i] = "";
+                }
             }
-        }
-        str = blankList.get(index).getExerciseCode().split(";xiaaman;");
-        for(int i=0; i<tempStr.length; i++) {
-            if(i<str.length) {
-                tempStr[i] = str[i];
-            } else {
+        } else {
+            for(int i=0; i<number;i++) {
                 tempStr[i] = "";
             }
         }
-        int number = blanStr.split(";xiaaman;").length;
         if(number == 1) {
             blankOne.setVisibility(View.VISIBLE);
             blankTwo.setVisibility(View.GONE);
@@ -825,11 +895,21 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
         selfGroup.setVisibility(View.GONE);
     }
 
+    //不显示答题反馈
+    public void notDisplaySubmitOUtCome() {
+        submitOUtCome.setVisibility(View.GONE);
+    }
+
+    //显示答题反馈
+    public void displaySubmitOUtCome() {
+        submitOUtCome.setVisibility(View.VISIBLE);
+    }
+
     //显示主观题答题
     public void displaySelfOUt() {
         selfGroup.setVisibility(View.VISIBLE);
         if(currentExercise.getExerciseCode().length() > 0) {
-            fileName.setHint(currentExercise.getExerciseCode());
+            fileName.setHint("已提交");
         } else {
             fileName.setHint("请上传word文件");
         }
@@ -848,13 +928,14 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
             } else if(chooseD.isChecked()) {
                 currentExercise.setExerciseCode("D");
             }
-            for(int i=0; i<chooseList.size(); i++) {
-                if(chooseList.get(i).getExerciseId().equals(currentExercise.getExerciseId())) {
-                    chooseList.get(i).setExerciseCode(currentExercise.getExerciseCode());
-                    break;
-                }
-            }
+//            for(int i=0; i<chooseList.size(); i++) {
+//                if(chooseList.get(i).getExerciseId().equals(currentExercise.getExerciseId())) {
+//                    chooseList.get(i).setExerciseCode(currentExercise.getExerciseCode());
+//                    break;
+//                }
+//            }
         } else if(exerciseType == 5) {
+            currentExercise.setExerciseCode("");
             if(checkBoxA.isChecked()) {
                 currentExercise.setExerciseCode(currentExercise.getExerciseCode()+"A");
             }
@@ -867,33 +948,31 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
             if(checkBoxD.isChecked()) {
                 currentExercise.setExerciseCode(currentExercise.getExerciseCode()+"D");
             }
-            for(int i=0; i<multiChooseList.size(); i++) {
-                if(multiChooseList.get(i).getExerciseId().equals(currentExercise.getExerciseId())) {
-                    multiChooseList.get(i).setExerciseCode(currentExercise.getExerciseCode());
-                    break;
-                }
-            }
+//            for(int i=0; i<multiChooseList.size(); i++) {
+//                if(multiChooseList.get(i).getExerciseId().equals(currentExercise.getExerciseId())) {
+//                    multiChooseList.get(i).setExerciseCode(currentExercise.getExerciseCode());
+//                    break;
+//                }
+//            }
         } else if(exerciseType == 3) {
             if(judgeRight.isChecked()) {
                 currentExercise.setExerciseCode("对");
             } else if(judgeError.isChecked()) {
                 currentExercise.setExerciseCode("错");
             }
-            for(int i=0; i<judgeList.size(); i++) {
-                if(judgeList.get(i).getExerciseId().equals(currentExercise.getExerciseId())) {
-                    judgeList.get(i).setExerciseCode(currentExercise.getExerciseCode());
-                    break;
-                }
-            }
+//            for(int i=0; i<judgeList.size(); i++) {
+//                if(judgeList.get(i).getExerciseId().equals(currentExercise.getExerciseId())) {
+//                    judgeList.get(i).setExerciseCode(currentExercise.getExerciseCode());
+//                    break;
+//                }
+//            }
         } else if(exerciseType == 4) {
             tempSaveBlankAnswer();
         } else if(exerciseType == 1) {
             currentExercise.setExerciseCode(editProgram.getText().toString());
         } else{
-            if(fileName.getText().toString().length() == 0) {
-                currentExercise.setExerciseCode((fileName.getHint().toString()));
-            } else {
-                fileName.setText("");
+            if(fileName.getText().toString().length() > 0) {
+                currentExercise.setExerciseCode((fileName.getText().toString()));
             }
 
         }
@@ -902,18 +981,14 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
     //将填空题答案缓存到code中
     public void tempSaveBlankAnswer() {
         //找到当前题目有多少空
-        String blanStr = "";
-        String tempStr[];
         int index=0;
-        for(int i=0; i<tempBlankList.size(); i++) {
-            if(tempBlankList.get(i).getExerciseId().equals(currentExercise.getExerciseId())) {
-                blanStr = tempBlankList.get(i).getExerciseCode();
+        for(int i=0; i<blankList.size(); i++) {
+            if(blankList.get(i).getExerciseId().equals(currentExercise.getExerciseId())) {
                 index = i;
                 break;
             }
         }
-        tempStr = blanStr.split(";xiaaman;");
-        int number = tempStr.length;
+        int number = currentExercise.getExerciseClassifyCause();
         if(number == 1) {
             blankList.get(index).setExerciseCode(blankOne.getText().toString());
         }
@@ -995,13 +1070,13 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
                 long length = file.getTotalSpace();
                 fileName.setText(file.getName());
                 chooseFilePath = uri.getPath();
-                Toast.makeText(this, ""+ length, Toast.LENGTH_LONG).show();
             }
         }
     }
 
-
     public void uploadFile() {
+        currentExercise.setExerciseCode("上传成功；"+ fileName.getText().toString());
+        checkDecidedExerciseNumber();
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -1010,6 +1085,8 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
                 if("200".equals(responseBody.string())) {
                     fileName.setHint( "上传成功；"+ fileName.getText().toString());
                     fileName.setText("");
+                } else {
+                    fileName.setHint( "上传失败！！！");
                 }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -1018,6 +1095,158 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
         }).start();
     }
 
+    //提交答案
+    public void submitExercise() {
+        try {
+            //为了方便传参，只好把用户名存入checkName
+            submitUnable();
+            UnionData unionData = new UnionData();
+            currentExercise.setExerciseCheckUserName(new SysUserDb().getUserName());
+            unionData.setCollectionId(collectionId);
+            unionData.setExercise(currentExercise);
+            String out = new OkhttpSubmitUtil(){}.execute(unionData).get();
+            checkDecidedExerciseNumber();
+            submitOUtCome.setHint(out);
+            new Handler().postDelayed(new Runnable(){
+                public void run() {
+                    //execute the task
+                    displaySubmitOUtCome();
+                    submitAble();
+                }
+            }, 500);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //在线编译
+    public void onlineExercise() {
+        try {
+            //为了方便传参，只好把用户名存入checkName
+            submitUnable();
+            currentExercise.setExerciseCheckUserName(new SysUserDb().getUserName());
+            String out = new OkhttpTestUtil(){}.execute(currentExercise).get();
+            submitOUtCome.setHint(out);
+            new Handler().postDelayed(new Runnable(){
+                public void run() {
+                    //execute the task
+                    displaySubmitOUtCome();
+                    submitAble();
+                }
+            }, 500);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //设置提交按钮和在线运行按钮不可点击
+    public void submitUnable() {
+        submitExercise.setEnabled(false);
+        testExercise.setEnabled(false);
+    }
+
+    //设置提交按钮和在线运行按钮可点击
+    public void submitAble() {
+        submitExercise.setEnabled(true);
+        testExercise.setEnabled(true);
+    }
+
+    //判断填空题是否有空
+    public boolean isHasBlank() {
+//        int index = 0;
+//        for(int i=0; i<blankList.size(); i++) {
+//            if(blankList.get(i).getExerciseId().equals(currentExercise.getExerciseId())) {
+//                index = i;
+//                break;
+//            }
+//        }
+        int number = currentExercise.getExerciseClassifyCause();
+        if(number == 1) {
+            if(blankOne.getText().length() == 0) {
+                return false;
+            }
+        }
+        if(number == 2) {
+            if(blankOne.getText().length()==0 || blankTwo.getText().length() == 0) {
+                return false;
+            }
+        }
+        if(number == 3) {
+            if(blankOne.getText().length()==0 || blankTwo.getText().length() == 0 || blankThree.getText().length() == 0) {
+                return false;
+            }
+        }
+        if(number == 4) {
+            if(blankOne.getText().length()==0 || blankTwo.getText().length() == 0 || blankThree.getText().length() == 0
+                    || blankFour.getText().length() == 0) {
+                return false;
+            }
+        }
+        if(number == 5) {
+            if(blankOne.getText().length()==0 || blankTwo.getText().length() == 0 || blankThree.getText().length() == 0
+                    || blankFour.getText().length() == 0 || blankFive.getText().length() == 0) {
+                return false;
+            }
+        }
+        if(number == 6) {
+            if(blankOne.getText().length()==0 || blankTwo.getText().length() == 0 || blankThree.getText().length() == 0
+                    || blankFour.getText().length() == 0 || blankFive.getText().length() == 0 || blankSix.getText().length() == 0) {
+                return false;
+            }
+        }
+        if(number == 7) {
+            if(blankOne.getText().length()==0 || blankTwo.getText().length() == 0 || blankThree.getText().length() == 0
+                    || blankFour.getText().length() == 0 || blankFive.getText().length() == 0 || blankSix.getText().length() == 0
+                    || blankSeven.getText().length() == 0) {
+                return false;
+            }
+        }
+        if(number == 8) {
+            if(blankOne.getText().length()==0 || blankTwo.getText().length() == 0 || blankThree.getText().length() == 0
+                    || blankFour.getText().length() == 0 || blankFive.getText().length() == 0 || blankSix.getText().length() == 0
+                    || blankSeven.getText().length() == 0 || blankEight.getText().length() == 0) {
+                return false;
+            }
+        }
+        if(number == 9) {
+            if(blankOne.getText().length()==0 || blankTwo.getText().length() == 0 || blankThree.getText().length() == 0
+                    || blankFour.getText().length() == 0 || blankFive.getText().length() == 0 || blankSix.getText().length() == 0
+                    || blankSeven.getText().length() == 0 || blankEight.getText().length() == 0 || blankNine.getText().length() == 0) {
+                return false;
+            }
+        }
+        if(number == 10) {
+            if(blankOne.getText().length()==0 || blankTwo.getText().length() == 0 || blankThree.getText().length() == 0
+                    || blankFour.getText().length() == 0 || blankFive.getText().length() == 0 || blankSix.getText().length() == 0
+                    || blankSeven.getText().length() == 0 || blankEight.getText().length() == 0 || blankNine.getText().length() == 0
+                    || blankTen.getText().length() == 0) {
+                return false;
+            }
+        }
+        return  true;
+    }
+
+    //检测题目提交个数
+    public void checkDecidedExerciseNumber() {
+        int total=0,number=0, index=0;
+        total = exerciseList.size();
+        for(int i=0; i<tempExerciseList.size(); i++) {
+            if(currentExercise.getExerciseId().equals(tempExerciseList.get(i).getExerciseId())) {
+                index = i;
+            }
+        }
+        tempExerciseList.get(index).setExerciseCode(exerciseList.get(index).getExerciseCode());
+        for(int i=0; i<tempExerciseList.size(); i++) {
+            if(tempExerciseList.get(i).getExerciseCode().length() > 0) {
+                number++;
+            }
+        }
+        decidedExercise.setText("题目提交信息（已提交/总题数）："+number+"题/"+total+"题");
+    }
 
 
 }

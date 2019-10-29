@@ -124,7 +124,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             startActivity(intent);
             finish();
         } else if("400".equals(message)){
-            Toast.makeText(LoginActivity.this, "登录失败，手机端只允许学生用户登录", Toast.LENGTH_SHORT).show();
+            Toast.makeText(LoginActivity.this, "登录失败，当前用户类型不能登录", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(LoginActivity.this, "登录失败，用户名或密码错误", Toast.LENGTH_SHORT).show();
 
