@@ -21,9 +21,26 @@ public class SysUserDb {
         user.save();
     }
 
+
+
     //查询用户名
     public String getUserName() {
         SysUser user = LitePal.findFirst(SysUser.class);
         return user.getUserName();
+    }
+
+    //判断用户是否已经登录
+    public boolean getUser() {
+        SysUser user = LitePal.findFirst(SysUser.class);
+        if(user != null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    //获得用户
+    public SysUser getSysUser() {
+        return LitePal.findFirst(SysUser.class);
     }
 }

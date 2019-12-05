@@ -2,8 +2,11 @@ package com.example.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
@@ -38,13 +41,18 @@ import com.example.util.OkhttpTestUtil;
 import com.example.util.TextViewHtml;
 import com.example.util.UnionData;
 import com.example.util.UploadUtil;
+import com.facebook.stetho.common.StringUtil;
 import com.jaeger.library.StatusBarUtil;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import okhttp3.MediaType;
 import okhttp3.ResponseBody;
 
@@ -78,6 +86,7 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
     private Button exerciseBack;
     private String chooseFilePath, collectionId;
     private File file;
+    private String tempFileName = "";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -290,11 +299,14 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
                 break;
             case R.id.submit_exercise:
                 if(exerciseType == 6) {
-                    String fileHint = fileName.getText().toString();
+                    String fileHint = fileName.getHint().toString();
+                    Log.d("蓝牙", "文件名称2 ："+ fileHint);
                     if(fileHint.length()==0) {
                         new AlertDialogUtil("消息提示", "请选择文件", this).alertDialogWithOk();
                     } else if(fileHint.length()>4 && (fileHint.substring(fileHint.length()-4).equals(".doc") || fileHint.substring(fileHint.length()-5).equals(".docx"))) {
                         uploadFile();
+                    } else if(fileHint.equals("上传成功") || fileHint.equals("已提交")) {
+                        new AlertDialogUtil("消息提示", "请重新选择文件", this).alertDialogWithOk();
                     } else {
                         new AlertDialogUtil("消息提示", "暂不支持该类型文件上传", this).alertDialogWithOk();
                     }
@@ -528,8 +540,10 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
 
     //设置当前题目输入输出样例
     public void showInputAndOutput() {
-        inputExample.setText(Html.fromHtml(currentExercise.getExerciseInputExample()));
-        outputExample.setText(Html.fromHtml(currentExercise.getExerciseOutputExample()));
+//        TextViewHtml.htmlToText(inputExample,this,currentExercise.getExerciseInputExample(),false);
+//        TextViewHtml.htmlToText(outputExample,this,currentExercise.getExerciseOutputExample(),false);
+        inputExample.setText(Html.fromHtml(getHTMLStr(currentExercise.getExerciseInputExample())));
+        outputExample.setText(Html.fromHtml(getHTMLStr(currentExercise.getExerciseOutputExample())));
         warningInfo.setText(currentExercise.getExerciseWarning());
     }
 
@@ -1057,42 +1071,112 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
         if (resultCode == Activity.RESULT_OK) {
             if (requestCode == 1) {
                 Uri uri = data.getData();
+                String path = getPath(this, uri);
                 String url = uri.getPath();
+                Log.d("文件路径", path);
                 int index = url.indexOf("/",1);
-                file = new File("/storage/emulated/0"+uri.getPath().substring(index));
+                file = new File(path);
 
-                Log.d("文件", ""+uri.getPath());
-                Log.d("文件", ""+file.exists());
-                Log.d("文件", file.getAbsolutePath());
-                Log.d("文件", file.getName());
-                Log.d("文件", ""+file.getTotalSpace());
-                Log.d("文件", ""+file.length());
+//                Log.d("文件", ""+uri.getPath());
+//                Log.d("文件", ""+file.exists());
+//                Log.d("文件", file.getAbsolutePath());
+//                Log.d("文件", file.getName());
+//                Log.d("文件", ""+file.getTotalSpace());
+//                Log.d("文件", ""+file.length());
                 long length = file.getTotalSpace();
-                fileName.setText(file.getName());
+
+                fileName.setHint(file.getName());
+                tempFileName = file.getName();
+                Log.d("蓝牙", "文件名称1 ："+ fileName.getHint().toString());
                 chooseFilePath = uri.getPath();
             }
         }
     }
 
+    public static String getPath(Context context, Uri uri) {
+        if ("content".equalsIgnoreCase(uri.getScheme())) {
+            String[] projection = { "_data" };
+            Cursor cursor = null;
+            try {
+                cursor = context.getContentResolver().query(uri, projection, null, null, null);
+                int column_index = cursor.getColumnIndexOrThrow("_data");
+                if (cursor.moveToFirst()) {
+                    return cursor.getString(column_index);
+                }
+            } catch (Exception e) {
+                // Eat it  Or Log it.
+            }
+        } else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
+        }
+        return null;
+    }
+
     public void uploadFile() {
-        currentExercise.setExerciseCode("上传成功；"+ fileName.getText().toString());
-        checkDecidedExerciseNumber();
+
+//        submitExercise();
+
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                 ResponseBody responseBody = UploadUtil.getInstance().upload(Constant.URL_UPLOAD_FILE,file);
                 if("200".equals(responseBody.string())) {
-                    fileName.setHint( "上传成功；"+ fileName.getText().toString());
-                    fileName.setText("");
+//                    fileName.setHint( "上传成功");
+//                    fileName.setText("");
+                    showResponse();
+
+
                 } else {
-                    fileName.setHint( "上传失败！！！");
+                    fileName.setHint( "上传失败！");
                 }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }).start();
+
+    }
+
+    //上传文件成功后提交题目
+    //提交答案
+    public void submitFileExercise() {
+        currentExercise.setExerciseCode("上传成功；"+ tempFileName);
+        try {
+            //为了方便传参，只好把用户名存入checkName
+            submitUnable();
+            UnionData unionData = new UnionData();
+            currentExercise.setExerciseCheckUserName(new SysUserDb().getUserName());
+            unionData.setCollectionId(collectionId);
+            unionData.setExercise(currentExercise);
+            String out = new OkhttpSubmitUtil(){}.execute(unionData).get();
+            checkDecidedExerciseNumber();
+//            submitOUtCome.setHint(out);
+            new Handler().postDelayed(new Runnable(){
+                public void run() {
+                    //execute the task
+//                    displaySubmitOUtCome();
+                    submitAble();
+                }
+            }, 500);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void showResponse() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                submitFileExercise();
+                checkDecidedExerciseNumber();
+                fileName.setHint( "上传成功");
+                fileName.setText("");
+                Toast.makeText(ExerciseDetailActivity.this, "上传成功", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     //提交答案
@@ -1145,12 +1229,25 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
 
     //设置提交按钮和在线运行按钮不可点击
     public void submitUnable() {
+//        submitExercise.setBackgroundColor(getResources().getColor(R.color.disable));
+//        submitExercise.setTextColor(getResources().getColor(R.color.gray));
+//        testExercise.setBackgroundColor(getResources().getColor(R.color.disable));
+//        testExercise.setTextColor(getResources().getColor(R.color.gray));
         submitExercise.setEnabled(false);
         testExercise.setEnabled(false);
     }
 
     //设置提交按钮和在线运行按钮可点击
     public void submitAble() {
+//        submitExercise.setBackground(getDrawable(R.drawable.submit_btn_state));
+//        testExercise.setBackground(getDrawable(R.drawable.submit_btn_state));
+//        submitExercise.setTextColor(getResources().getColor(R.color.white));
+//        testExercise.setTextColor(getResources().getColor(R.color.white));
+//        submitExercise.setPadding(15,8,15,8);
+//        testExercise.setPadding(15,8,15,8);
+//        testExercise.setTextSize(18);
+//        submitExercise.setTextSize(18);
+
         submitExercise.setEnabled(true);
         testExercise.setEnabled(true);
     }
@@ -1245,8 +1342,14 @@ public class ExerciseDetailActivity extends AppCompatActivity implements View.On
                 number++;
             }
         }
-        decidedExercise.setText("题目提交信息（已提交/总题数）："+number+"题/"+total+"题");
+        decidedExercise.setText("答题信息（已提交/总题数）："+number+"题/"+total+"题");
     }
 
 
+    private String getHTMLStr(String content) {
+
+            content = content.replace("\n","<br>");
+
+        return content;
+    }
 }

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <litepal>
     <dbname value="student_education"></dbname>
-    <version value="2"></version>
+    <version value="3"></version>
     <list>
         <mapping class="com.example.bean.SysUser"></mapping>           <!--将类映射到表中-->
         <mapping class="com.example.bean.SysCollection"></mapping>
         <mapping class="com.example.bean.SysExercise"></mapping>
         <mapping class="com.example.bean.CollectionExercise"></mapping>
+        <mapping class="com.example.bean.BlueTooth"></mapping>
     </list>
 </litepal>

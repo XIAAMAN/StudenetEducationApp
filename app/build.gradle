@@ -30,6 +30,7 @@ dependencies {
     implementation 'org.litepal.android:java:3.0.0'
     implementation 'com.facebook.stetho:stetho:1.5.0'
     implementation 'com.alibaba:fastjson:1.2.12'
+    implementation 'com.inuker.bluetooth:library:1.4.0'
     implementation 'com.squareup.okhttp3:okhttp:3.4.1'
     implementation('com.jaeger.statusbarutil:library:1.5.1') {
         exclude group: 'com.android.support'
@@ -37,5 +38,6 @@ dependencies {
     //富文本
     implementation 'com.zzhoujay.richtext:richtext:3.0.4'
     implementation 'com.squareup.okio:okio:1.12.0'
+    implementation 'me.weishu:free_reflection:2.2.0'
 
 }

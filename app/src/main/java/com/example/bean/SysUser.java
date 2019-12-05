@@ -23,6 +23,16 @@ public class SysUser extends LitePalSupport {
 
     private int userStatus;
 
+    private String userMacAddress;
+
+    public String getUserMacAddress() {
+        return userMacAddress;
+    }
+
+    public void setUserMacAddress(String userMacAddress) {
+        this.userMacAddress = userMacAddress;
+    }
+
     public String getUserId() {
         return userId;
     }

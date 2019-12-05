@@ -6,6 +6,8 @@ import android.content.Context;
 import org.litepal.LitePal;
 import org.litepal.LitePalApplication;
 
+import me.weishu.reflection.Reflection;
+
 public class MyApplication extends LitePalApplication {
     private static Context context;
     @Override
@@ -18,6 +20,8 @@ public class MyApplication extends LitePalApplication {
     public static Context getContext() {
         return context;
     }
+
+
 
 }
 

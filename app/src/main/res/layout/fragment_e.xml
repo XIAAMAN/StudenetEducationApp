@@ -8,8 +8,8 @@
         android:layout_height="match_parent"
         android:background="#20616161"
         android:gravity="center"
-        android:text="E"
+        android:text="建设中..."
         android:textColor="#ffffff"
-        android:textSize="100sp" />
+        android:textSize="50sp" />
 
 </android.support.constraint.ConstraintLayout>

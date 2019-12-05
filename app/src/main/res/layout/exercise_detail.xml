@@ -115,6 +115,7 @@
 
     <TextView
         android:id="@+id/input_example"
+        android:inputType="textMultiLine"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18dp"/>
@@ -129,6 +130,7 @@
 
     <TextView
         android:id="@+id/output_example"
+        android:inputType="textMultiLine"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="18dp"/>
@@ -345,9 +347,11 @@
         android:padding="10dp"
         android:hint="在此处填写你的代码"
         android:layout_marginBottom="10dp"
+        android:longClickable="false"
+        android:maxLength="100000"
         android:background="@drawable/bg_edittext"
         android:inputType="textMultiLine"
-        android:lines="15"
+        android:minLines="15"
         android:gravity="left|top"
         android:textColor="@color/black"
         android:fontFamily="微软雅黑"
@@ -367,6 +371,7 @@
             android:layout_height="wrap_content"
             android:focusable="false"
             android:hint="请上传word文件"
+
             android:layout_weight="3"
             android:id="@+id/file_name"/>
         <Button
